@@ -259,11 +259,6 @@ class GIEngine:
         ## 状态转移矩阵
         Phi = Phi + F * imucur.dt
         ## 计算系统传播噪声
-        # for i in range(21):
-        #     for j in range(21):
-        #         print(Phi[i][j], end=" ")
-        #     print()
-        # print()
         Qd = G @ self.Qc_ @ G.T * imucur.dt
         
         Qd = (Phi @ Qd @ Phi.T + Qd) / 2

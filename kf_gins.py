@@ -4,11 +4,17 @@ import numpy as np
 import kf_gins_types as ky
 import types_my as ty
 import sys
+import yaml
 
+with open('kf-gins.yaml', 'r',encoding='utf-8') as file:
+        config = yaml.safe_load(file)
+        
 class IMU_O:
+    
+        
     # IMU和GNSS数据文件路径
-    imupath = r"C:\\Users\\Administrator\\Desktop\\WSN+IMU定位\\数据\\测试集\\IMU测试集.csv"
-    gnsspath =  r"C:\\Users\\Administrator\\Desktop\\WSN+IMU定位\\数据\\测试集\\间隔5秒_前10秒连续\\GNSS间隔5秒测试集.csv"
+    imupath = r"C:\\Users\\Administrator\\Desktop\\WSN+IMU定位\\代码\\data processing\\IMU_2023-06-01 2046改.csv"
+    gnsspath =  r"C:\\Users\\Administrator\\Desktop\\WSN+IMU定位\\代码\\data processing\\RTK_2023-06-01 2046改2.csv"
     # IMU文件列数 (只会用前7列IMU数据)
     imudatalen = 7
     # IMU原始数据频率
@@ -16,18 +22,18 @@ class IMU_O:
     imudatarate = 200
     # 处理时间段，结束时间设置为-1时则处理至IMU文件结束
     # processing interval[s]
-    starttime = 357485.0
+    starttime = 1685623563.0
     endtime = -1
     # 初始状态
     # 初始位置, 纬度 经度 高程
     # initial position, latitude, longitude, altitude. [deg, deg, m]
-    initpos = np.array([  30.4604514341, 114.4719753313, 22.93866 ])
+    initpos = np.array([  23.1579337, 113.3437332, 22.9325 ])
     # 初始速度, 北向速度, 东向速度, 垂向速度
     # initial velocity, speed in the directions of north, east and down. [m/s, m/s, m/s]
-    initvel = np.array([ 0.114, -7.18422, 0.00324 ])
+    initvel = np.array([ 0.0, 0.0, 0.0 ])
     # 初始姿态, 欧拉角(ZYX旋转顺序), 横滚, 俯仰, 航向
     # initial attitude, euler angle(ZYX rotation), roll, pitch, yaw [deg, deg, deg]
-    initatt = np.array([ 0.33721 ,  -0.44062 ,  271.39921 ])
+    initatt = np.array([ 1.384866476, -1.366858721 ,  265.3240585 ])
     # 初始IMU零偏和比例因子, IMU的三个轴(前、右、下)
     # initial IMU bias and scale error, three axes of the imu (forward, right and down)
     initgyrbias = np.array([ 0.0, 0.0, 0.0])    # [deg/h]
@@ -46,50 +52,50 @@ class IMU_O:
     # initial attitude std, roll, pitch and yaw std. [deg, deg, deg]
     initattstd = np.array([ 0.003, 0.003, 0.023 ])
     # IMU噪声建模参数, IMU的三个轴
-    arw = np.array([0.2, 0.2, 0.2])          # [deg/sqrt(hr)]
-    vrw = np.array([0.1, 0.1, 0.1])         # [m/s/sqrt(hr)]
-    gbstd = np.array([20.0, 20.0, 20.0])        # [deg/hr]
+    arw = np.array([0.3, 0.3, 0.3])          # [deg/sqrt(hr)]
+    vrw = np.array([0.04, 0.04, 0.04])         # [m/s/sqrt(hr)]
+    gbstd = np.array([15.0, 15.0, 15.0])        # [deg/hr]
     abstd = np.array([100.0, 100.0, 100.0])     # [mGal]
-    gsstd = np.array([300.0, 300.0, 300.0])  # [ppm]
+    gsstd = np.array([550.0, 550.0, 550.0])  # [ppm]
     asstd = np.array([300.0, 300.0, 300.0])  # [ppm]
     corrtime = 1.0                    # [hr]
     # 天线杆臂, IMU坐标系前右下方向
     # antenna lever, forward, right and down in the imu frame. [m]
-    antlever =  np.array([ 0.045, 0.46, -0.238 ])
+    antlever =  np.array([ 0,0,0 ])
 
 def LoadOptions():
     ## 读取初始位置(纬度 经度 高程)、(北向速度 东向速度 垂向速度)、姿态(欧拉角，ZYX旋转顺序, 横滚角、俯仰角、航向角)
     options = ky.GINSOptions()
-    options.initstate.pos = IMU_O.initpos * Angle.D2R
-    options.initstate.vel = IMU_O.initvel
-    options.initstate.euler = IMU_O.initatt * Angle.D2R
+    options.initstate.pos = np.array(config['initpos']) * Angle.D2R
+    options.initstate.vel = np.array(config['initvel'])
+    options.initstate.euler = np.array(config['initatt']) * Angle.D2R
     options.initstate.pos[2] *= Angle.R2D
 
     ## 读取IMU误差初始值(零偏和比例因子)
-    options.initstate.imuerror.gyrbias = IMU_O.initgyrbias * Angle.D2R/3600.0
-    options.initstate.imuerror.accbias = IMU_O.initaccbias * 1e-5
-    options.initstate.imuerror.gyrscale = IMU_O.initgyrscale * 1e-6
-    options.initstate.imuerror.accscale = IMU_O.initaccscale * 1e-6
+    options.initstate.imuerror.gyrbias = np.array(config['initgyrbias']) * Angle.D2R/3600.0
+    options.initstate.imuerror.accbias = np.array(config['initaccbias']) * 1e-5
+    options.initstate.imuerror.gyrscale = np.array(config['initgyrscale']) * 1e-6
+    options.initstate.imuerror.accscale = np.array(config['initaccscale']) * 1e-6
 
     ## 读取初始位置、速度、姿态(欧拉角)的标准差
-    options.initstate_std.pos = IMU_O.initposstd
-    options.initstate_std.vel = IMU_O.initvelstd
-    options.initstate_std.euler = IMU_O.initattstd * Angle.D2R
+    options.initstate_std.pos = np.array(config['initposstd'])
+    options.initstate_std.vel = np.array(config['initvelstd'])
+    options.initstate_std.euler = np.array(config['initattstd']) * Angle.D2R
 
     ## 读取IMU噪声参数
-    options.imunoise.gyr_arw = IMU_O.arw
-    options.imunoise.acc_vrw = IMU_O.vrw
-    options.imunoise.gyrbias_std = IMU_O.gbstd
-    options.imunoise.accbias_std = IMU_O.abstd
-    options.imunoise.gyrscale_std = IMU_O.gsstd
-    options.imunoise.accscale_std = IMU_O.asstd
-    options.imunoise.corr_time = IMU_O.corrtime
+    options.imunoise.gyr_arw = np.array(config['arw'])
+    options.imunoise.acc_vrw = np.array(config['vrw'])
+    options.imunoise.gyrbias_std = np.array(config['gbstd'])
+    options.imunoise.accbias_std = np.array(config['abstd'])
+    options.imunoise.gyrscale_std = np.array(config['gsstd'])
+    options.imunoise.accscale_std = np.array(config['asstd'])
+    options.imunoise.corr_time = config['corrtime']
 
     ## 读取IMU误差初始标准差,如果配置文件中没有设置，则采用IMU噪声参数中的零偏和比例因子的标准差
-    options.initstate_std.imuerror.gyrbias = IMU_O.gbstd * Angle.D2R / 3600.0
-    options.initstate_std.imuerror.accbias = IMU_O.abstd * 1e-5
-    options.initstate_std.imuerror.gyrscale = IMU_O.gsstd * 1e-6
-    options.initstate_std.imuerror.accscale = IMU_O.asstd * 1e-6
+    options.initstate_std.imuerror.gyrbias = np.array(config['gbstd']) * Angle.D2R / 3600.0
+    options.initstate_std.imuerror.accbias = np.array(config['abstd']) * 1e-5
+    options.initstate_std.imuerror.gyrscale = np.array(config['gsstd']) * 1e-6
+    options.initstate_std.imuerror.accscale = np.array(config['asstd']) * 1e-6
 
     ## IMU噪声参数转换为标准单位
     options.imunoise.gyr_arw *= (Angle.D2R / 60.0)
@@ -101,7 +107,7 @@ def LoadOptions():
     options.imunoise.corr_time *= 3600
 
     ## GNSS天线杆臂, GNSS天线相位中心在IMU坐标系下位置
-    options.antlever = IMU_O.antlever
+    options.antlever = np.array(config['antlever'])
     return options
 
 def imuload(data_,rate,pre_time):
@@ -153,12 +159,12 @@ options = LoadOptions()
 giengine = gi.GIEngine()
 giengine.GIFunction(options)
 
-imudatarate = IMU_O.imudatarate
-starttime = IMU_O.starttime
-endtime = IMU_O.endtime
+imudatarate = config['imudatarate']
+starttime = config['starttime']
+endtime = config['endtime']
 pre_time = starttime
-imu_data = np.genfromtxt(IMU_O.imupath,delimiter=',')
-gnss_data = np.genfromtxt(IMU_O.gnsspath,delimiter=',')
+imu_data = np.genfromtxt(config['imupath'],delimiter=',')
+gnss_data = np.genfromtxt(config['gnsspath'],delimiter=',')
 if endtime < 0 :
     endtime = gnss_data[-1, 0]
 
@@ -189,7 +195,7 @@ for row in imu_data[is_index+1:]:
 
     sys.stdout.write('\r' + str(timestamp))
     sys.stdout.flush()
-np.savetxt(r"C:\\Users\\Administrator\\Desktop\\WSN+IMU定位\\数据\\测试集\\间隔5秒_前10秒连续\\result.csv", nav_result, delimiter=",",fmt="%6f")    
+np.savetxt(config['outputpath'], nav_result, delimiter=",",fmt="%6f")    
 
 
 
