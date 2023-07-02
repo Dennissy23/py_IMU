@@ -5,12 +5,13 @@
 
 # IMU和GNSS数据文件路径
 # imudata and gnssdata filepath
-imupath: 'C:\Users\Administrator\Desktop\WSN+IMU定位\数据\2023.6.1晚上实验数据\实车数据\数据处理结果\2023-06-01 2046\IMU_2023-06-01 2046改.csv'
-gnsspath: 'C:\Users\Administrator\Desktop\WSN+IMU定位\数据\2023.6.1晚上实验数据\实车数据\数据处理结果\2023-06-01 2046\内部手机卫星定位结果改2046.csv'
+imupath: 'E:\BaiduSyncdisk\数据\2023.6.1晚上实验数据\实车数据\数据处理结果\2023-06-01 2046\IMU_2023-06-01 2046改.csv'
+gnsspath: 'E:\BaiduSyncdisk\数据\2023.6.1晚上实验数据\实车数据\数据处理结果\2023-06-01 2046\RTK_2023-06-01 2046改.csv'
 
 # 输出文件夹路径
 # output folder path
-outputpath: 'C:\Users\Administrator\Desktop\WSN+IMU定位\数据\2023.6.1晚上实验数据\实车数据\数据处理结果\2023-06-01 2046\内部KF定位结果2046手机.csv'
+outputpath_nav: 'E:\BaiduSyncdisk\数据\2023.6.1晚上实验数据\实车数据\数据处理结果\2023-06-01 2046\内部KF定位结果2046.csv'
+outputpath_error: 'E:\BaiduSyncdisk\数据\2023.6.1晚上实验数据\实车数据\数据处理结果\2023-06-01 2046\内部KF定位误差结果2046.csv'
 
 # IMU文件列数 (只会用前7列IMU数据)
 # IMU data columns, only use the first seven columns
